@@ -9,6 +9,7 @@
 		"preview": "vite preview"
 	},
 	"dependencies": {
+		"async-sema": "^3.1.1",
 		"jsonwebtoken": "^9.0.2",
 		"@solidjs/router": "^0.15.3",
 		"hono": "^4.7.10",

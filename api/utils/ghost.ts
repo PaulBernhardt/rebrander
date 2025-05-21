@@ -1,5 +1,6 @@
 import { type Result, err, ok } from "neverthrow";
 import { z } from "zod/v4";
+import { findAndReplace } from "./lexical.ts";
 import type { TokenGenerator } from "./tokenGenerator.ts";
 const MOCK_POST_LEXICAL =
 	'{"root":{"children":[{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"$","type":"extended-text","version":1}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1}],"direction":"ltr","format":"","indent":0,"type":"root","version":1}}';
@@ -38,20 +39,26 @@ export const GhostPostSchema = z.object({
 export type GhostPost = z.infer<typeof GhostPostSchema>;
 const ghostPostFields = Object.keys(GhostPostSchema.def.shape).join(",");
 
+export const GhostPostIdOnlySchema = z.object({
+	id: z.string(),
+	url: z.string(),
+});
+export type GhostPostIdOnly = z.infer<typeof GhostPostIdOnlySchema>;
+
 export const GhostPostErrorSchema = z.object({
 	message: z.string(),
 	type: z.string(),
 });
 export type GhostPostError = z.infer<typeof GhostPostErrorSchema>;
 
-const TokenGeneratorNotSetError = err({
+const TokenGeneratorNotSetError = {
 	message: "Token generator is not set",
-	type: "TokenGeneratorNotSet",
-});
+	type: "TokenGeneratorNotSetError",
+};
 
 export const GhostPostsResponseSchema = z.object({
 	meta: GhostMetaSchema.required(),
-	posts: z.array(GhostPostSchema),
+	posts: z.array(GhostPostIdOnlySchema),
 });
 export type GhostPostsResponse = z.infer<typeof GhostPostsResponseSchema>;
 
@@ -83,19 +90,31 @@ export class Ghost {
 		return data;
 	}
 
-	getPostFetcher(): PostFetcher {
+	getPostFetcher({
+		page = 0,
+		limit = 25,
+		targetString,
+	}: {
+		page?: number;
+		limit?: number;
+		targetString?: string;
+	} = {}): Result<PostFetcher, typeof TokenGeneratorNotSetError> {
 		if (!this.tokenGenerator) {
-			throw new Error("Token generator is not set");
+			return err(TokenGeneratorNotSetError);
 		}
-		return new PostFetcher(this.url, this.tokenGenerator, {
-			page: 1,
-			limit: 1,
-		});
+		return ok(
+			new PostFetcher(
+				this.url,
+				this.tokenGenerator,
+				{ page, limit },
+				targetString,
+			),
+		);
 	}
 
 	async getPost(id: string): Promise<Result<GhostPost, GhostPostError>> {
 		if (!this.tokenGenerator) {
-			return TokenGeneratorNotSetError;
+			return err(TokenGeneratorNotSetError);
 		}
 		const response = await fetch(
 			`${this.url}/ghost/api/admin/posts/${id}?fields=${ghostPostFields}`,
@@ -120,7 +139,7 @@ export class Ghost {
 		if (!this.tokenGenerator) {
 			throw new Error("Token generator is not set");
 		}
-		//const { id: _id, ...rest } = post;
+
 		const response = await fetch(`${this.url}/ghost/api/admin/posts/${id}/`, {
 			method: "PUT",
 			body: JSON.stringify({
@@ -177,6 +196,54 @@ export class Ghost {
 		});
 		return response.status;
 	}
+
+	async replaceTextInPost(
+		id: string,
+		target: string,
+		replacement: string,
+	): Promise<Result<boolean, GhostPostError>> {
+		const post = await this.getPost(id);
+		if (post.isErr()) {
+			return err(post.error);
+		}
+		const result = findAndReplace(post.value.lexical, target, replacement);
+		if (result.isErr()) {
+			return err(result.error);
+		}
+		if (!result.value.replacementsMade) {
+			return ok(false);
+		}
+		// TODO: Make this return a result
+		const status = await this.updatePost(id, {
+			...post.value,
+			lexical: result.value.result,
+		});
+		if (status !== 200) {
+			return err({
+				message: `Failed to update post: ${status}`,
+				type: "GhostPostError",
+			});
+		}
+		return ok(true);
+	}
+
+	async getAllPostIds(
+		targetString: string,
+	): Promise<Result<string[], GhostPostError>> {
+		const fetcher = this.getPostFetcher({
+			targetString,
+		});
+		if (fetcher.isErr()) {
+			return err(fetcher.error);
+		}
+		const postIds: string[] = [];
+
+		while (fetcher.value.hasNext) {
+			const posts = await fetcher.value.next();
+			postIds.push(...posts.map((post) => post.id));
+		}
+		return ok(postIds);
+	}
 }
 
 /**
@@ -190,7 +257,7 @@ export class PostFetcher {
 		private readonly targetString?: string,
 	) {}
 
-	async next(): Promise<GhostPost[]> {
+	async next(): Promise<GhostPostIdOnly[]> {
 		if (!this.hasNext) {
 			return [];
 		}

@@ -941,6 +941,7 @@
         "npm:@biomejs/biome@^1.9.4",
         "npm:@solidjs/router@~0.15.3",
         "npm:@types/jsonwebtoken@^9.0.9",
+        "npm:async-sema@^3.1.1",
         "npm:hono@^4.7.10",
         "npm:jsonwebtoken@^9.0.2",
         "npm:neverthrow@^8.2.0",

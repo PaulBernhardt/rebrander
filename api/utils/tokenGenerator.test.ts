@@ -1,7 +1,7 @@
 /// <reference lib="deno.ns" />
 import { expect } from "jsr:@std/expect";
 import { FakeTime } from "jsr:@std/testing/time";
-import { TokenGenerator } from "./tokenGenerator.ts";
+import { TokenGenerator } from "../utils/tokenGenerator.ts";
 
 Deno.test("it should get a token", () => {
 	const mockedTime = new FakeTime("2025-01-01T00:00:00.000Z");
