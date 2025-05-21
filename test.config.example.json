@@ -1,0 +1,6 @@
+{
+	"env": {
+		"GHOST_ADMIN_API_ID": "your_ghost_admin_api_id_here",
+		"GHOST_ADMIN_API_SECRET": "your_ghost_admin_api_secret_here"
+	}
+}
