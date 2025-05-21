@@ -12,6 +12,7 @@
 		"jsonwebtoken": "^9.0.2",
 		"@solidjs/router": "^0.15.3",
 		"hono": "^4.7.10",
+		"neverthrow": "^8.2.0",
 		"solid-js": "^1.9.5",
 		"zod": "^3.25.7"
 	},

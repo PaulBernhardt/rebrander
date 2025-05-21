@@ -147,9 +147,87 @@ Deno.test("GetPost - Should fetch a post given an id", async () => {
 		tokenGenerator,
 	});
 	const post = await ghost.getPost("682cb17bcd95d800012b7e43");
-	expect(GhostPostSchema.check(post)).toBe(true);
-	expect(post.id).toBe("682cb17bcd95d800012b7e43");
+	if (post.isErr()) {
+		throw new Error("post is null");
+	}
+	expect(GhostPostSchema.safeParse(post.value).success).toBe(true);
+	expect(post.value.id).toBe("682cb17bcd95d800012b7e43");
+	expect(post.value.title).toBeDefined();
+	expect(post.value.lexical).toBeDefined();
 });
+
+Deno.test("UpdatePost - Should update a post given an id", async () => {
+	const testPostId = "682dd5cfcd95d800012b7e54";
+	const ghost = new Ghost({
+		url: "https://ghost.glitteringvoid.ca",
+		tokenGenerator,
+	});
+
+	const randomNumber = Math.floor(Math.random() * 1000000);
+	try {
+		const post = await ghost.getPost(testPostId);
+		if (post.isErr()) {
+			throw new Error("post is null");
+		}
+		post.value.lexical = post.value.lexical.replace(
+			/\$\d*\$/,
+			`$${randomNumber}$`,
+		);
+		const status = await ghost.updatePost(testPostId, post.value);
+		expect(status).toBe(200);
+		const updatedPost = await ghost.getPost(testPostId);
+		if (updatedPost.isErr()) {
+			throw new Error("error fetching updated post");
+		}
+		expect(updatedPost.value.lexical).toBeDefined();
+		expect(updatedPost.value.lexical).toContain(`$${randomNumber}$`);
+	} catch (error) {
+		expect(error).toBeUndefined();
+	}
+});
+
+Deno.test("CreateMockPost - Should create a (mock) post", async () => {
+	const ghost = new Ghost({
+		url: "https://ghost.glitteringvoid.ca",
+		tokenGenerator,
+	});
+
+	const postId = await ghost.createMockPost({
+		title: "My new title",
+		text: "My new text",
+	});
+
+	const post = await ghost.getPost(postId);
+	if (post.isErr()) {
+		throw new Error("post is null");
+	}
+
+	expect(post.value.title).toBe("My new title");
+	expect(post.value.lexical).toContain("MOCK POST: My new text");
+});
+
+Deno.test("DeletePost - Should delete a post given an id", async () => {
+	const ghost = new Ghost({
+		url: "https://ghost.glitteringvoid.ca",
+		tokenGenerator,
+	});
+
+	const postId = await ghost.createMockPost({
+		title: "Delete me",
+		text: "Delete me",
+	});
+
+	const status = await ghost.deletePost(postId);
+	expect(status).toBe(204);
+
+	const post = await ghost.getPost(postId);
+	if (post.isOk()) {
+		throw new Error("post was not deleted");
+	}
+	expect(post.error.type).toBe("NotFoundError");
+});
+
+// TODO: Handle cases where the post is already being edited
 
 // Deno.test("UpdatePost - Should update a post given an id, target string, and replacement string", async () => {
 //   const ghost = new Ghost({
