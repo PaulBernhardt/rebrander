@@ -5,15 +5,17 @@ import type { TokenGenerator } from "./tokenGenerator.ts";
 const MOCK_POST_LEXICAL =
 	'{"root":{"children":[{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"$","type":"extended-text","version":1}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1}],"direction":"ltr","format":"","indent":0,"type":"root","version":1}}';
 
-export type GhostSiteInfo = {
-	site: {
-		title: string;
-		icon: string | null;
-		cover_image: string | null;
-		accent_color: string | null;
-		description: string | null;
-	};
-};
+export const GhostSiteInfoSchema = z.object({
+	site: z.object({
+		title: z.string(),
+		logo: z.string().nullable(),
+		icon: z.string().nullable(),
+		cover_image: z.string().nullable(),
+		accent_color: z.string().nullable(),
+		description: z.string().nullable(),
+	}),
+});
+export type GhostSiteInfo = z.infer<typeof GhostSiteInfoSchema>;
 
 export const GhostPaginationSchema = z.object({
 	page: z.number().optional(),
@@ -41,20 +43,14 @@ const ghostPostFields = Object.keys(GhostPostSchema.def.shape).join(",");
 
 export const GhostPostIdOnlySchema = z.object({
 	id: z.string(),
-	url: z.string(),
 });
 export type GhostPostIdOnly = z.infer<typeof GhostPostIdOnlySchema>;
 
-export const GhostPostErrorSchema = z.object({
+export const GhostErrorSchema = z.object({
 	message: z.string(),
 	type: z.string(),
 });
-export type GhostPostError = z.infer<typeof GhostPostErrorSchema>;
-
-const TokenGeneratorNotSetError = {
-	message: "Token generator is not set",
-	type: "TokenGeneratorNotSetError",
-};
+export type GhostError = z.infer<typeof GhostErrorSchema>;
 
 export const GhostPostsResponseSchema = z.object({
 	meta: GhostMetaSchema.required(),
@@ -67,27 +63,51 @@ export const GhostPostResponseSchema = z.union([
 		posts: z.array(GhostPostSchema).length(1),
 	}),
 	z.object({
-		errors: z.array(GhostPostErrorSchema),
+		errors: z.array(GhostErrorSchema),
 	}),
 ]);
 export type GhostPostResponse = z.infer<typeof GhostPostResponseSchema>;
 
+const TokenGeneratorNotSetError = {
+	message: "Token generator is not set",
+	type: "TokenGeneratorNotSetError",
+};
+
 export class Ghost {
 	url: string;
-	tokenGenerator?: TokenGenerator;
+	tokenGenerator: TokenGenerator;
 
 	constructor({
 		url,
 		tokenGenerator,
-	}: { url: string; tokenGenerator?: TokenGenerator }) {
+	}: { url: string; tokenGenerator: TokenGenerator }) {
 		this.url = url;
 		this.tokenGenerator = tokenGenerator;
 	}
+	static async getSiteInfo(
+		url: string,
+	): Promise<Result<GhostSiteInfo, GhostError>> {
+		try {
+			const response = await fetch(`${url}/ghost/api/admin/site`);
+			const data = await response.json();
+			const parsed = GhostSiteInfoSchema.safeParse(data);
+			if (!parsed.success) {
+				return err({
+					message: `Failed to parse site info: ${parsed.error}`,
+					type: "GhostSiteInfoError",
+				});
+			}
+			return ok(parsed.data);
+		} catch (error) {
+			return err({
+				message: `Failed to get site info: ${error}`,
+				type: "GhostSiteInfoError",
+			});
+		}
+	}
 
-	async getSiteInfo(): Promise<GhostSiteInfo> {
-		const response = await fetch(`${this.url}/ghost/api/admin/site`);
-		const data = await response.json();
-		return data;
+	async getSiteInfo(): Promise<Result<GhostSiteInfo, GhostError>> {
+		return Ghost.getSiteInfo(this.url);
 	}
 
 	getPostFetcher({
@@ -98,24 +118,16 @@ export class Ghost {
 		page?: number;
 		limit?: number;
 		targetString?: string;
-	} = {}): Result<PostFetcher, typeof TokenGeneratorNotSetError> {
-		if (!this.tokenGenerator) {
-			return err(TokenGeneratorNotSetError);
-		}
-		return ok(
-			new PostFetcher(
-				this.url,
-				this.tokenGenerator,
-				{ page, limit },
-				targetString,
-			),
+	} = {}): PostFetcher {
+		return new PostFetcher(
+			this.url,
+			this.tokenGenerator,
+			{ page, limit },
+			targetString,
 		);
 	}
 
-	async getPost(id: string): Promise<Result<GhostPost, GhostPostError>> {
-		if (!this.tokenGenerator) {
-			return err(TokenGeneratorNotSetError);
-		}
+	async getPost(id: string): Promise<Result<GhostPost, GhostError>> {
 		const response = await fetch(
 			`${this.url}/ghost/api/admin/posts/${id}?fields=${ghostPostFields}`,
 			{
@@ -124,6 +136,13 @@ export class Ghost {
 				},
 			},
 		);
+		if (!response.ok) {
+			response.body?.cancel();
+			return err({
+				message: `Failed to fetch post: ${response.status}`,
+				type: "GhostPostError",
+			});
+		}
 		const data = await response.json();
 		const parsed = GhostPostResponseSchema.safeParse(data);
 		if (!parsed.success) {
@@ -135,36 +154,42 @@ export class Ghost {
 		return err(parsed.data.errors[0]);
 	}
 
-	async updatePost(id: string, post: GhostPost): Promise<number> {
-		if (!this.tokenGenerator) {
-			throw new Error("Token generator is not set");
+	async updatePost(
+		id: string,
+		post: GhostPost,
+	): Promise<Result<void, GhostError>> {
+		try {
+			const response = await fetch(`${this.url}/ghost/api/admin/posts/${id}/`, {
+				method: "PUT",
+				body: JSON.stringify({
+					posts: [post],
+				}),
+				headers: {
+					Authorization: `Ghost ${this.tokenGenerator.get()}`,
+					"Content-Type": "application/json",
+				},
+			});
+			if (response.ok) {
+				response.body?.cancel();
+				return ok(undefined);
+			}
+			const data = await response.json();
+			return err({
+				message: `Failed to update post: ${JSON.stringify(data)}`,
+				type: "GhostPostError",
+			});
+		} catch (e) {
+			return err({
+				message: `Failed to update post: ${e}`,
+				type: "UnknownError",
+			});
 		}
-
-		const response = await fetch(`${this.url}/ghost/api/admin/posts/${id}/`, {
-			method: "PUT",
-			body: JSON.stringify({
-				posts: [post],
-			}),
-			headers: {
-				Authorization: `Ghost ${this.tokenGenerator.get()}`,
-				"Content-Type": "application/json",
-			},
-		});
-		if (response.ok) {
-			response.body?.cancel();
-			return response.status;
-		}
-		const data = await response.json();
-		throw new Error(`Failed to update post: ${JSON.stringify(data)}`);
 	}
 
 	async createMockPost({
 		title,
 		text,
 	}: { title: string; text: string }): Promise<string> {
-		if (!this.tokenGenerator) {
-			throw new Error("Token generator is not set");
-		}
 		const response = await fetch(`${this.url}/ghost/api/admin/posts/`, {
 			method: "POST",
 			body: JSON.stringify({
@@ -184,62 +209,57 @@ export class Ghost {
 		return data.posts[0].id;
 	}
 
-	async deletePost(id: string): Promise<number> {
-		if (!this.tokenGenerator) {
-			throw new Error("Token generator is not set");
-		}
+	async deletePost(id: string): Promise<boolean> {
 		const response = await fetch(`${this.url}/ghost/api/admin/posts/${id}`, {
 			method: "DELETE",
 			headers: {
 				Authorization: `Ghost ${this.tokenGenerator.get()}`,
 			},
 		});
-		return response.status;
+		return response.ok;
 	}
 
 	async replaceTextInPost(
 		id: string,
 		target: string,
 		replacement: string,
-	): Promise<Result<boolean, GhostPostError>> {
+	): Promise<Result<boolean, GhostError>> {
 		const post = await this.getPost(id);
 		if (post.isErr()) {
 			return err(post.error);
 		}
-		const result = findAndReplace(post.value.lexical, target, replacement);
-		if (result.isErr()) {
-			return err(result.error);
+		const replaceResult = findAndReplace(
+			post.value.lexical,
+			target,
+			replacement,
+		);
+		if (replaceResult.isErr()) {
+			return err(replaceResult.error);
 		}
-		if (!result.value.replacementsMade) {
+		if (!replaceResult.value.replacementsMade) {
 			return ok(false);
 		}
-		// TODO: Make this return a result
-		const status = await this.updatePost(id, {
+		const updateResult = await this.updatePost(id, {
 			...post.value,
-			lexical: result.value.result,
+			lexical: replaceResult.value.string,
 		});
-		if (status !== 200) {
-			return err({
-				message: `Failed to update post: ${status}`,
-				type: "GhostPostError",
-			});
+		if (updateResult.isErr()) {
+			return err(updateResult.error);
 		}
 		return ok(true);
 	}
 
 	async getAllPostIds(
 		targetString: string,
-	): Promise<Result<string[], GhostPostError>> {
+	): Promise<Result<string[], GhostError>> {
 		const fetcher = this.getPostFetcher({
 			targetString,
 		});
-		if (fetcher.isErr()) {
-			return err(fetcher.error);
-		}
+
 		const postIds: string[] = [];
 
-		while (fetcher.value.hasNext) {
-			const posts = await fetcher.value.next();
+		while (fetcher.hasNext) {
+			const posts = await fetcher.next();
 			postIds.push(...posts.map((post) => post.id));
 		}
 		return ok(postIds);

@@ -3,14 +3,21 @@ import { expect, fn } from "jsr:@std/expect";
 import { err, ok } from "neverthrow";
 import { UPDATE_STATUS, updatePosts } from "./postUpdater.ts";
 import { Ghost } from "./utils/ghost.ts";
+import { TokenGenerator } from "./utils/tokenGenerator.ts";
 
 function sleep(ms: number) {
 	return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+const tokenGenerator = new TokenGenerator(
+	"ghost-admin-api-id",
+	"ghost-admin-api-secret",
+);
+
 Deno.test("it should fetch all posts and update them, notifying the callback of status for each post", async () => {
 	const ghost = new Ghost({
 		url: "https://ghost.glitteringvoid.ca",
+		tokenGenerator,
 	});
 
 	const postIds = new Map([
@@ -69,6 +76,7 @@ Deno.test("it should fetch all posts and update them, notifying the callback of 
 Deno.test("it should rate limit when updating posts", async () => {
 	const ghost = new Ghost({
 		url: "https://ghost.glitteringvoid.ca",
+		tokenGenerator,
 	});
 
 	const postIds: string[] = [];

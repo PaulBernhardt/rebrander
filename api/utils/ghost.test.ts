@@ -1,7 +1,7 @@
 /// <reference lib="deno.ns" />
 import { expect } from "jsr:@std/expect";
-import { TokenGenerator } from "./tokenGenerator.ts";
 import { Ghost, GhostPostSchema, PostFetcher } from "../utils/ghost.ts";
+import { TokenGenerator } from "./tokenGenerator.ts";
 
 // Load test configuration
 const config: {
@@ -15,37 +15,31 @@ const tokenGenerator = new TokenGenerator(
 );
 
 Deno.test("getSiteInfo - should get site info", async () => {
-	const ghost = new Ghost({
-		url: "https://ghost.glitteringvoid.ca",
-	});
-
-	const site = await ghost.getSiteInfo();
-	expect(site).toMatchObject({
+	const site = await Ghost.getSiteInfo("https://ghost.glitteringvoid.ca");
+	if (site.isErr()) {
+		throw new Error(site.error.message);
+	}
+	expect(site.value).toMatchObject({
 		site: {
 			accent_color: "#273d84",
-			allow_external_signup: false,
+
 			cover_image:
 				"https://ghost.glitteringvoid.ca/content/images/2025/03/V18RVMK1FMAMCYCWNMN0B0RVC0-5.jpg",
 			description: "Thoughts, stories and ideas.",
 			icon: "https://ghost.glitteringvoid.ca/content/images/2025/03/AYZMQRC6RNYEAB716W52AMW0Z0-1.jpg",
-			locale: "en",
+
 			logo: null,
 			title: "The Glittering Void",
-			url: "https://ghost.glitteringvoid.ca/",
 		},
 	});
 });
 
-Deno.test("getPosts - should return err with no token generator", async () => {
-	const ghost = new Ghost({
-		url: "https://ghost.glitteringvoid.ca",
-	});
-	const fetcher = await ghost.getPostFetcher();
-	if (fetcher.isOk()) {
-		throw new Error("did not return err");
+Deno.test("getSiteInfo - should return an error if the site info is not valid", async () => {
+	const site = await Ghost.getSiteInfo("https://speed.cloudflare.com/");
+	if (site.isOk()) {
+		throw new Error("site is ghost site");
 	}
-	expect(fetcher.error.message).toBe("Token generator is not set");
-	expect(fetcher.error.type).toBe("TokenGeneratorNotSetError");
+	expect(site.error.type).toBe("GhostSiteInfoError");
 });
 
 Deno.test("getPosts - should get a post fetcher", async () => {
@@ -55,10 +49,8 @@ Deno.test("getPosts - should get a post fetcher", async () => {
 	});
 
 	const posts = await ghost.getPostFetcher();
-	if (posts.isErr()) {
-		throw new Error("posts is null");
-	}
-	expect(posts.value).toBeInstanceOf(PostFetcher);
+
+	expect(posts).toBeInstanceOf(PostFetcher);
 });
 
 Deno.test("Posts - should get minimal posts", async () => {
@@ -200,7 +192,9 @@ Deno.test("UpdatePost - Should update a post given an id", async () => {
 			`$${randomNumber}$`,
 		);
 		const status = await ghost.updatePost(testPostId, post.value);
-		expect(status).toBe(200);
+		if (status.isErr()) {
+			throw new Error(status.error.message);
+		}
 		const updatedPost = await ghost.getPost(testPostId);
 		if (updatedPost.isErr()) {
 			throw new Error("error fetching updated post");
@@ -247,16 +241,14 @@ Deno.test("DeletePost - Should delete a post given an id", async () => {
 	});
 
 	const status = await ghost.deletePost(postId);
-	expect(status).toBe(204);
+	expect(status).toBe(true);
 
 	const post = await ghost.getPost(postId);
 	if (post.isOk()) {
 		throw new Error("post was not deleted");
 	}
-	expect(post.error.type).toBe("NotFoundError");
+	expect(post.error.type).toBe("GhostPostError");
 });
-
-// TODO: Handle cases where the post is already being edited
 
 Deno.test("ReplaceTextInPost - Should replace text in a post given an id, target string, and replacement string", async () => {
 	const ghost = new Ghost({

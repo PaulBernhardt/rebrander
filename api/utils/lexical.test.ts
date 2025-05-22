@@ -92,26 +92,26 @@ Deno.test("findAndReplace - Should replace text in lexical", () => {
 	if (replaced.isErr()) {
 		throw new Error(replaced.error.message);
 	}
-	expect(replaced.value.result).not.toMatch(
+	expect(replaced.value.string).not.toMatch(
 		/Here is the target text to replace/,
 	);
-	expect(replaced.value.result).toMatch(/Here is the stuff to replace/);
+	expect(replaced.value.string).toMatch(/Here is the stuff to replace/);
 	expect(replaced.value.replacementsMade).toBe(true);
 	const replaced2 = findAndReplace(
-		replaced.value.result,
+		replaced.value.string,
 		"stuff",
 		"target text",
 	);
 	if (replaced2.isErr()) {
 		throw new Error(replaced2.error.message);
 	}
-	expect(replaced2.value.result).not.toMatch(/Here is the stuff to replace/);
-	expect(replaced2.value.result).toMatch(/Here is the target text to replace/);
+	expect(replaced2.value.string).not.toMatch(/Here is the stuff to replace/);
+	expect(replaced2.value.string).toMatch(/Here is the target text to replace/);
 	expect(replaced2.value.replacementsMade).toBe(true);
 
 	// We can't do this earlier because the order of keys is changed, but
 	// putting the original text back will produce a string that parsed back to the original
-	expect(JSON.parse(replaced2.value.result)).toMatchObject(JSON.parse(lexical));
+	expect(JSON.parse(replaced2.value.string)).toMatchObject(JSON.parse(lexical));
 });
 
 Deno.test("findAndReplace - Should not replace text if it's not present", () => {
@@ -121,6 +121,6 @@ Deno.test("findAndReplace - Should not replace text if it's not present", () => 
 	if (replaced.isErr()) {
 		throw new Error(replaced.error.message);
 	}
-	expect(replaced.value.result).toMatch(/Here is the target text to replace/);
+	expect(replaced.value.string).toMatch(/Here is the target text to replace/);
 	expect(replaced.value.replacementsMade).toBe(false);
 });

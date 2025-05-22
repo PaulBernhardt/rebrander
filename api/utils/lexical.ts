@@ -94,7 +94,7 @@ export function findAndReplace(
 	lexicalString: string,
 	target: string,
 	replacement: string,
-): Result<{ result: string; replacementsMade: boolean }, ParseError> {
+): Result<{ string: string; replacementsMade: boolean }, ParseError> {
 	const deserialized = deserialize(lexicalString);
 	if (deserialized.isErr()) {
 		return err(deserialized.error);
@@ -111,7 +111,7 @@ export function findAndReplace(
 	};
 
 	return ok({
-		result: JSON.stringify(replaced),
+		string: JSON.stringify(replaced),
 		replacementsMade,
 	});
 }

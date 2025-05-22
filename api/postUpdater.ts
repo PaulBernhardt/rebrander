@@ -1,6 +1,6 @@
 import { Sema } from "async-sema";
 import { type Result, err, ok } from "neverthrow";
-import type { Ghost, GhostPostError } from "./utils/ghost.ts";
+import type { Ghost, GhostError } from "./utils/ghost.ts";
 
 export const UPDATE_STATUS = {
 	UPDATED: "updated",
@@ -16,7 +16,7 @@ export async function updatePosts(
 	ghost: Ghost,
 	statusCallback: (postId: string, status: UpdateStatus) => void,
 	rateLimit = 100,
-): Promise<Result<() => void, GhostPostError>> {
+): Promise<Result<() => void, GhostError>> {
 	let abort = false;
 	const postIds = await ghost.getAllPostIds(targetString);
 	if (postIds.isErr()) {
