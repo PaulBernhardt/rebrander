@@ -1,6 +1,7 @@
 /// <reference lib="deno.ns" />
 import { expect } from "jsr:@std/expect";
-import { Ghost, GhostPostSchema, PostFetcher } from "../utils/ghost.ts";
+import { Ghost, PostFetcher } from "../utils/ghost.ts";
+import { GhostPostSchema } from "./schemas.ts";
 import { TokenGenerator } from "./tokenGenerator.ts";
 
 // Load test configuration

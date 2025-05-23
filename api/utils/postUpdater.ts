@@ -1,6 +1,7 @@
 import { Sema } from "async-sema";
 import { type Result, err, ok } from "neverthrow";
-import type { Ghost, GhostError } from "./utils/ghost.ts";
+import type { Ghost } from "./ghost.ts";
+import type { GhostError } from "./schemas.ts";
 
 export const UPDATE_STATUS = {
 	UPDATED: "updated",
@@ -10,13 +11,18 @@ export const UPDATE_STATUS = {
 
 export type UpdateStatus = (typeof UPDATE_STATUS)[keyof typeof UPDATE_STATUS];
 
+export type UpdatePostData = {
+	abort: () => void;
+	total: number;
+};
+
 export async function updatePosts(
 	targetString: string,
 	replacementString: string,
 	ghost: Ghost,
 	statusCallback: (postId: string, status: UpdateStatus) => void,
 	rateLimit = 100,
-): Promise<Result<() => void, GhostError>> {
+): Promise<Result<UpdatePostData, GhostError>> {
 	let abort = false;
 	const postIds = await ghost.getAllPostIds(targetString);
 	if (postIds.isErr()) {
@@ -44,7 +50,10 @@ export async function updatePosts(
 			sema.release();
 		}
 	});
-	return ok(() => {
-		abort = true;
+	return ok({
+		abort: () => {
+			abort = true;
+		},
+		total: postIds.value.length,
 	});
 }

@@ -1,9 +1,9 @@
 import { expect, fn } from "jsr:@std/expect";
 /// <reference lib="deno.ns" />
 import { err, ok } from "neverthrow";
-import { UPDATE_STATUS, updatePosts } from "./postUpdater.ts";
-import { Ghost } from "./utils/ghost.ts";
-import { TokenGenerator } from "./utils/tokenGenerator.ts";
+import { UPDATE_STATUS, updatePosts } from "../utils/postUpdater.ts";
+import { Ghost } from "./ghost.ts";
+import { TokenGenerator } from "./tokenGenerator.ts";
 
 function sleep(ms: number) {
 	return new Promise((resolve) => setTimeout(resolve, ms));
