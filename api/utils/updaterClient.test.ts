@@ -373,7 +373,7 @@ Deno.test("UpdaterClient - Should stream status updates", async () => {
 		expect(send).toHaveBeenCalledWith(
 			JSON.stringify({
 				type: "status",
-				data: { total: 1000, processed: i * 100 },
+				data: { total: 1000, processed: i * 10 },
 			}),
 		);
 	}
@@ -384,7 +384,8 @@ Deno.test("UpdaterClient - Should stream status updates", async () => {
 		}),
 	);
 
-	expect(send).toHaveBeenCalledTimes(11 + 1);
+	// 1000 status updates, 1 success update, 1 initial status update
+	expect(send).toHaveBeenCalledTimes(1000 + 2);
 });
 
 Deno.test("UpdaterClient - Should send an error for failed updates", async () => {
@@ -418,7 +419,7 @@ Deno.test("UpdaterClient - Should send an error for failed updates", async () =>
 		expect(send).toHaveBeenCalledWith(
 			JSON.stringify({
 				type: "status",
-				data: { total: 1000, processed: i * 100 },
+				data: { total: 1000, processed: i * 10 },
 			}),
 		);
 	}
@@ -436,5 +437,6 @@ Deno.test("UpdaterClient - Should send an error for failed updates", async () =>
 			data: { total: 1000, success: 996, error: 4 },
 		}),
 	);
-	expect(send).toHaveBeenCalledTimes(11 + 4 + 1);
+	// 1000 status updates, 1 success update, 4 error updates, 1 initial status update
+	expect(send).toHaveBeenCalledTimes(1000 + 1 + 4 + 1);
 });

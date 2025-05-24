@@ -11,7 +11,7 @@ export const UPDATE_STATUS = {
 
 export type UpdateStatus = (typeof UPDATE_STATUS)[keyof typeof UPDATE_STATUS];
 
-export type UpdatePostData = {
+export type UpdatePostResponse = {
 	abort: () => void;
 	total: number;
 };
@@ -22,7 +22,7 @@ export async function updatePosts(
 	ghost: Ghost,
 	statusCallback: (postId: string, status: UpdateStatus) => void,
 	rateLimit = 100,
-): Promise<Result<UpdatePostData, GhostError>> {
+): Promise<Result<UpdatePostResponse, GhostError>> {
 	let abort = false;
 	const postIds = await ghost.getAllPostIds(targetString);
 	if (postIds.isErr()) {

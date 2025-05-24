@@ -67,9 +67,11 @@ export type GhostPostResponse = z.infer<typeof GhostPostResponseSchema>;
 
 // Updater Client Schemas
 
+export const GhostTokenSchema = z.string().regex(/^[a-z0-9]+:[a-z0-9]+$/);
+
 export const ClientRequestSchema = z.object({
 	url: z.url(),
-	token: z.string().regex(/^[a-z0-9]+:[a-z0-9]+$/),
+	token: GhostTokenSchema,
 	targetString: z.string().min(1),
 	replacementString: z.string().min(1),
 	concurrentUpdates: z.number().min(1).max(100).optional().default(100),

@@ -85,6 +85,10 @@ export class UpdaterClient {
 
 			let processed = 0;
 			let errorCount = 0;
+			const notificationInterval = Math.max(
+				1,
+				Math.round(concurrentUpdates / 100),
+			);
 
 			const abort = await updatePosts(
 				targetString,
@@ -99,7 +103,7 @@ export class UpdaterClient {
 						});
 					}
 					processed++;
-					if (processed % 100 === 0) {
+					if (processed % notificationInterval === 0) {
 						UpdaterClient.send(ws, {
 							type: UpdateEventType.STATUS,
 							data: { total, processed },

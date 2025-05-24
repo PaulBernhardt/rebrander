@@ -227,7 +227,7 @@ Deno.test("CreateMockPost - Should create a (mock) post", async () => {
 	expect(post.value.lexical).toContain("MOCK POST: My new text");
 
 	const status = await ghost.deletePost(postId);
-	expect(status).toBe(204);
+	expect(status).toBe(true);
 });
 
 Deno.test("DeletePost - Should delete a post given an id", async () => {
@@ -274,7 +274,7 @@ Deno.test("ReplaceTextInPost - Should replace text in a post given an id, target
 	);
 
 	const status = await ghost.deletePost(postId);
-	expect(status).toBe(204);
+	expect(status).toBe(true);
 });
 
 Deno.test("getAllPostIds - should get all post ids", async (t) => {

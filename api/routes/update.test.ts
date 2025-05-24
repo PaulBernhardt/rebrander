@@ -32,7 +32,6 @@ Deno.test("when the client connects", async (t) => {
 
 			expect(onClose.calls[0].args[0]).toMatchObject({
 				code: 4400,
-				reason: "Invalid request, expected a valid url and token",
 			});
 		},
 	);

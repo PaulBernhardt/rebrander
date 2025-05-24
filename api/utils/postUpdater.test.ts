@@ -107,7 +107,8 @@ Deno.test("it should rate limit when updating posts", async () => {
 	if (abort.isErr()) {
 		throw abort.error;
 	}
-	abort.value();
+	expect(abort.value.total).toBe(100);
+	abort.value.abort();
 	await sleep(1000);
 	expect(callback).toHaveBeenCalledTimes(10);
 });
