@@ -76,3 +76,42 @@ export const ClientRequestSchema = z.object({
 	replacementString: z.string().min(1),
 	concurrentUpdates: z.number().min(1).max(100).optional().default(100),
 });
+
+export const ClientStatusSchema = z.object({
+	total: z.number(),
+	processed: z.number(),
+});
+export type ClientStatus = z.infer<typeof ClientStatusSchema>;
+
+export const ClientErrorSchema = z.object({
+	postId: z.string(),
+});
+export type ClientError = z.infer<typeof ClientErrorSchema>;
+
+export const ClientSuccessSchema = z.object({
+	total: z.number(),
+	success: z.number(),
+	error: z.number(),
+});
+export type ClientSuccess = z.infer<typeof ClientSuccessSchema>;
+
+export const UpdateEventType = {
+	STATUS: "status",
+	ERROR: "error",
+	SUCCESS: "success",
+} as const;
+export const ClientMessageSchema = z.discriminatedUnion("type", [
+	z.object({
+		type: z.literal(UpdateEventType.STATUS),
+		data: ClientStatusSchema,
+	}),
+	z.object({
+		type: z.literal(UpdateEventType.ERROR),
+		data: ClientErrorSchema,
+	}),
+	z.object({
+		type: z.literal(UpdateEventType.SUCCESS),
+		data: ClientSuccessSchema,
+	}),
+]);
+export type ClientMessage = z.infer<typeof ClientMessageSchema>;

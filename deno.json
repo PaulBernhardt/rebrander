@@ -1,7 +1,7 @@
 {
 	"tasks": {
 		"dev": "deno task dev:api & deno task dev:vite",
-		"dev:api": "deno run --allow-env --allow-net --allow-read api/main.ts",
+		"dev:api": "deno serve --allow-env --allow-net --allow-read api/main.ts",
 		"dev:vite": "deno run -A npm:vite",
 		"build": "deno run -A npm:vite build",
 		"test": "deno test --allow-env --allow-net --allow-read",

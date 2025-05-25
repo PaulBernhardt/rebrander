@@ -269,7 +269,6 @@ Deno.test("UpdateClient - send should send a message to the websocket with the r
 	UpdaterClient.send(ws as any, {
 		// @ts-expect-error - This function should complain if the type is not valid
 		type: "fake",
-		data: { message: "test" },
 	});
 
 	// It will still send the message though

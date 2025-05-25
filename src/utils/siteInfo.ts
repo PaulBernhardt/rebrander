@@ -68,3 +68,5 @@ export function createSiteInfo(host: string) {
 		infoState,
 	};
 }
+
+export type SiteInfo = ReturnType<typeof createSiteInfo>;

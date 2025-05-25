@@ -1,7 +1,11 @@
 import { Ghost } from "./ghost.ts";
 import { updatePosts } from "./postUpdater.ts";
 import { safeParse } from "./safeParse.ts";
-import { ClientRequestSchema } from "./schemas.ts";
+import {
+	type ClientMessage,
+	ClientRequestSchema,
+	UpdateEventType,
+} from "./schemas.ts";
 import { TokenGenerator } from "./tokenGenerator.ts";
 
 export type WS = {
@@ -26,38 +30,8 @@ export type WebSocketEventHandler<T extends BasicEvent> = (
 	ws: WS,
 ) => Promise<void>;
 
-export const UpdateEventType = {
-	STATUS: "status",
-	ERROR: "error",
-	SUCCESS: "success",
-} as const;
-export type UpdateEventType =
-	(typeof UpdateEventType)[keyof typeof UpdateEventType];
-
-export type UpdateEventData = {
-	[UpdateEventType.STATUS]: StatusUpdate;
-	[UpdateEventType.ERROR]: {
-		postId: string;
-	};
-	[UpdateEventType.SUCCESS]: {
-		total: number;
-		success: number;
-		error: number;
-	};
-};
-
-export type UpdateEvent<T extends UpdateEventType> = {
-	type: T;
-	data: UpdateEventData[T];
-};
-
-export type StatusUpdate = {
-	total: number;
-	processed: number;
-};
-
 export class UpdaterClient {
-	static send<T extends UpdateEventType>(ws: WS, event: UpdateEvent<T>) {
+	static send(ws: WS, event: ClientMessage) {
 		ws.send(JSON.stringify(event));
 	}
 	abort: () => void = () => {};

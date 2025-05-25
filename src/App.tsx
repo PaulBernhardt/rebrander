@@ -1,24 +1,29 @@
 // @ts-types="solid-js"
-import { Suspense, createSignal } from "solid-js";
+import { Show } from "solid-js";
 import "./App.css";
+import Rebrander from "./components/Rebrander.tsx";
+import SelectSite from "./components/SelectSite.tsx";
 import { SiteInfoDisplay } from "./components/SiteInfoDisplay.tsx";
-import { createSiteInfo } from "./utils/siteInfo.ts";
+import { INFO_STATE, createSiteInfo } from "./utils/siteInfo.ts";
 
 function App() {
 	const siteInfo = createSiteInfo("http://localhost:8000");
-	const [inputUrl, setInputUrl] = createSignal("");
 
 	return (
 		<>
-			<h1>Ghost Rebrander</h1>
-			<p>Enter the URL of your Ghost site to get started</p>
-			<input type="url" onInput={(e) => setInputUrl(e.target.value)} />
-			<button type="button" onClick={() => siteInfo.setUrl(inputUrl())}>
-				Check
-			</button>
-			<Suspense fallback={<div>Loading...</div>}>
-				<SiteInfoDisplay info={siteInfo.info()} state={siteInfo.infoState()} />
-			</Suspense>
+			<Show
+				when={siteInfo.infoState() === INFO_STATE.VALID}
+				fallback={<SelectSite siteInfo={siteInfo} />}
+			>
+				<Show when={siteInfo.info()} fallback={<div>Loading...</div>}>
+					{(info) => (
+						<>
+							<SiteInfoDisplay info={info()} url={siteInfo.url()} />
+							<Rebrander />
+						</>
+					)}
+				</Show>
+			</Show>
 		</>
 	);
 }

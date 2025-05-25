@@ -22,12 +22,12 @@ describe("siteInfo", () => {
 			await sleep(100);
 		}
 		expect(test).toHaveBeenCalledTimes(2);
-		expect(siteInfo.info()?.isOk()).toBe(true);
+		expect(siteInfo.info()?.site).toBeDefined();
 		expect(test).toHaveBeenCalledWith(
 			expect.toSatisfy(
 				(value) =>
-					value?.isOk() &&
-					expect(value.value).toMatchObject({
+					value &&
+					expect(value).toMatchObject({
 						site: {
 							accent_color: "#273d84",
 							cover_image:
@@ -53,9 +53,9 @@ describe("siteInfo", () => {
 			await sleep(100);
 		}
 		expect(test).toHaveBeenCalledTimes(2);
-		expect(siteInfo.info()?.isErr()).toBe(true);
+		expect(siteInfo.info()?.site).toBeUndefined();
 		expect(test).toHaveBeenCalledWith(
-			expect.toSatisfy((value) => value?.isErr()),
+			expect.toSatisfy((value) => value?.site === undefined),
 		);
 	});
 
@@ -70,9 +70,9 @@ describe("siteInfo", () => {
 			await sleep(100);
 		}
 		expect(test).toHaveBeenCalledTimes(2);
-		expect(siteInfo.info()?.isErr()).toBe(true);
+		expect(siteInfo.info()?.site).toBeUndefined();
 		expect(test).toHaveBeenCalledWith(
-			expect.toSatisfy((value) => value?.isErr()),
+			expect.toSatisfy((value) => value?.site === undefined),
 		);
 	});
 });
