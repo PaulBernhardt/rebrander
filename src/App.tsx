@@ -1,35 +1,26 @@
-import { createSignal } from 'solid-js'
-import solidLogo from './assets/solid.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+// @ts-types="solid-js"
+import { Suspense, createSignal } from "solid-js";
+import "./App.css";
+import { SiteInfoDisplay } from "./components/SiteInfoDisplay.tsx";
+import { createSiteInfo } from "./utils/siteInfo.ts";
 
 function App() {
-  const [count, setCount] = createSignal(0)
+	const siteInfo = createSiteInfo("http://localhost:8000");
+	const [inputUrl, setInputUrl] = createSignal("");
 
-  return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} class="logo" alt="Vite logo" />
-        </a>
-        <a href="https://solidjs.com" target="_blank">
-          <img src={solidLogo} class="logo solid" alt="Solid logo" />
-        </a>
-      </div>
-      <h1>Vite + Solid</h1>
-      <div class="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count()}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p class="read-the-docs">
-        Click on the Vite and Solid logos to learn more
-      </p>
-    </>
-  )
+	return (
+		<>
+			<h1>Ghost Rebrander</h1>
+			<p>Enter the URL of your Ghost site to get started</p>
+			<input type="url" onInput={(e) => setInputUrl(e.target.value)} />
+			<button type="button" onClick={() => siteInfo.setUrl(inputUrl())}>
+				Check
+			</button>
+			<Suspense fallback={<div>Loading...</div>}>
+				<SiteInfoDisplay info={siteInfo.info()} state={siteInfo.infoState()} />
+			</Suspense>
+		</>
+	);
 }
 
-export default App
+export default App;

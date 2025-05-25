@@ -11,6 +11,7 @@ const app = new Hono().post("/", async (c) => {
 		const body = await c.req.json();
 		const details = DetailsSchema.safeParse(body);
 		if (!details.success) {
+			console.log("Invalid request", details.error);
 			return c.json(
 				{
 					message: "Invalid details",
@@ -21,11 +22,12 @@ const app = new Hono().post("/", async (c) => {
 
 		const siteInfo = await Ghost.getSiteInfo(details.data.url);
 		if (siteInfo.isErr()) {
+			console.log("Error getting site info", siteInfo.error);
 			return c.json({ message: siteInfo.error.message }, 400);
 		}
 		return c.json(siteInfo.value);
 	} catch (error) {
-		console.error(`Error parsing details: ${error}`);
+		console.log(`Error parsing details: ${error}`);
 		return c.json(
 			{
 				message:
