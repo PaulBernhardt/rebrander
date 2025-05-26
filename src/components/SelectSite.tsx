@@ -4,6 +4,7 @@ import {
 	createSignal,
 } from "solid-js";
 import { Dynamic } from "solid-js/web";
+import { endUrlWithSlash } from "../utils/endUrlWithSlash.ts";
 import {
 	INFO_STATE,
 	type InfoStateType,
@@ -37,7 +38,10 @@ function SelectSite({ siteInfo }: { siteInfo: SiteInfo }) {
 					siteInfo.setUrl(inputUrl());
 				}}
 			>
-				<input type="url" onInput={(e) => setInputUrl(e.target.value)} />
+				<input
+					type="url"
+					onInput={(e) => setInputUrl(endUrlWithSlash(e.target.value))}
+				/>
 				<button type="submit">Check</button>
 			</form>
 			<Dynamic component={UrlStatus[siteInfo.infoState()]} />

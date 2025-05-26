@@ -21,7 +21,7 @@ export function Rebranding({
 			>
 				{(updater) => <RebrandReport result={updater()} />}
 			</Show>
-			<RebrandErrors errors={rebrander.postErrors()} url={url} />
+			<RebrandErrors errors={rebrander.failedUpdates} url={url} />
 		</>
 	);
 }

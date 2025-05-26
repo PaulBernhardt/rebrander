@@ -69,6 +69,7 @@ Deno.test("it should fetch all posts and update them, notifying the callback of 
 			postId,
 			"target string",
 			"replacement string",
+			0,
 		);
 	}
 });

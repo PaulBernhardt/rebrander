@@ -172,6 +172,7 @@ export class Ghost {
 		id: string,
 		target: string,
 		replacement: string,
+		flakePercentage: number,
 	): Promise<Result<boolean, GhostError>> {
 		const post = await this.getPost(id);
 		if (post.isErr()) {
@@ -188,7 +189,8 @@ export class Ghost {
 		if (!replaceResult.value.replacementsMade) {
 			return ok(false);
 		}
-		if (Math.random() < 0.01) {
+		// You can set a flake percentage to test error handling
+		if (Math.random() < flakePercentage) {
 			return err({
 				message: "Test error",
 				type: "TestError",

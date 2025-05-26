@@ -1,6 +1,7 @@
 import { hc } from "hono/client";
 // @ts-types="solid-js"
 import { createResource, createSignal } from "solid-js";
+import { createStore } from "solid-js/store";
 import type { ServerApi } from "../../api/main.ts";
 import {
 	ClientMessageSchema,
@@ -31,6 +32,7 @@ export function createRebrander(options: {
 	host: string;
 	client?: ReturnType<typeof hc<ServerApi>>;
 	concurrentUpdates?: number;
+	flakePercentage?: number;
 }) {
 	console.log("Creating rebrander", options);
 	const client = options.client ?? hc<ServerApi>(options.host);
@@ -40,7 +42,7 @@ export function createRebrander(options: {
 
 	const [total, setTotal] = createSignal<number | null>(null);
 	const [processed, setProcessed] = createSignal<number>(0);
-	const [postErrors, setPostErrors] = createSignal<string[]>([]);
+	const [failedUpdates, setFailedUpdates] = createStore<string[]>([]);
 	const [error, setError] = createSignal<string | null>(null);
 	const [updater] = createResource<RebranderResult | null>(async () => {
 		return new Promise((resolve, reject) => {
@@ -61,6 +63,7 @@ export function createRebrander(options: {
 						targetString: options.targetString,
 						replacementString: options.replacementString,
 						concurrentUpdates: options.concurrentUpdates,
+						flakePercentage: options.flakePercentage ?? 0,
 					}),
 				);
 			};
@@ -88,7 +91,7 @@ export function createRebrander(options: {
 						setProcessed(message.data.processed);
 						break;
 					case UpdateEventType.ERROR:
-						setPostErrors((prev) => [...prev, message.data.postId]);
+						setFailedUpdates((prev) => [...prev, message.data.postId]);
 						break;
 					case UpdateEventType.SUCCESS:
 						resolve({
@@ -107,7 +110,7 @@ export function createRebrander(options: {
 		status,
 		updater,
 		error,
-		postErrors,
+		failedUpdates,
 		total,
 		processed,
 	};

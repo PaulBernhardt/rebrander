@@ -17,6 +17,12 @@ if (root) {
 						<App concurrentUpdates={Number(params.concurrentUpdates)} />
 					)}
 				/>
+				<Route
+					path="/flake/:flakePercentage"
+					component={({ params }) => (
+						<App flakePercentage={Number(params.flakePercentage)} />
+					)}
+				/>
 			</Router>
 		),
 		root,

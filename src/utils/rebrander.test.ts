@@ -159,7 +159,7 @@ describe("rebrander", () => {
 		expect(rebrander.status()).toBe("running");
 		expect(rebrander.total()).toBe(10);
 		expect(rebrander.processed()).toBe(0);
-		expect(rebrander.postErrors()).toEqual([]);
+		expect(rebrander.failedUpdates).toEqual([]);
 		expect(rebrander.updater()).toBeUndefined();
 		for (let i = 0; i < 10; i++) {
 			await sleep(10);
@@ -168,7 +168,7 @@ describe("rebrander", () => {
 		expect(rebrander.status()).toBe("done");
 		expect(rebrander.total()).toBe(10);
 		expect(rebrander.processed()).toBe(10);
-		expect(rebrander.postErrors()).toEqual(["5"]);
+		expect(rebrander.failedUpdates).toEqual(["5"]);
 		expect(rebrander.updater()).toEqual({
 			error: 1,
 			success: 9,

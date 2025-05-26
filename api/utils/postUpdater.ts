@@ -22,6 +22,7 @@ export async function updatePosts(
 	ghost: Ghost,
 	statusCallback: (postId: string, status: UpdateStatus) => void,
 	rateLimit = 100,
+	flakePercentage = 0,
 ): Promise<Result<UpdatePostResponse, GhostError>> {
 	let abort = false;
 	const postIds = await ghost.getAllPostIds(targetString);
@@ -37,6 +38,7 @@ export async function updatePosts(
 					postId,
 					targetString,
 					replacementString,
+					flakePercentage,
 				);
 				if (result.isErr()) {
 					statusCallback(postId, UPDATE_STATUS.ERROR);

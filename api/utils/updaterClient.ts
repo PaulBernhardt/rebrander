@@ -53,8 +53,20 @@ export class UpdaterClient {
 				ws.close(4400, `Invalid request: ${parsed.error.message}`);
 				return;
 			}
-			const { url, token, targetString, replacementString, concurrentUpdates } =
-				parsed.data;
+			const {
+				url,
+				token,
+				targetString,
+				replacementString,
+				concurrentUpdates,
+				flakePercentage,
+			} = parsed.data;
+
+			if (flakePercentage > 0) {
+				console.log(
+					`Flake percentage is set, update will fail on ${flakePercentage * 100}% of posts`,
+				);
+			}
 			const ghostClient = this.createGhostClient(url, token);
 			const info = await ghostClient.getSiteInfo();
 			if (info.isErr()) {
@@ -103,6 +115,7 @@ export class UpdaterClient {
 					}
 				},
 				concurrentUpdates,
+				flakePercentage,
 			);
 			if (abort.isErr()) {
 				console.error("Unable to update posts", abort.error);

@@ -7,9 +7,11 @@ import { Rebranding } from "./Rebranding.tsx";
 function Rebrander({
 	url,
 	concurrentUpdates,
+	flakePercentage,
 }: {
 	url: string;
 	concurrentUpdates?: number;
+	flakePercentage?: number;
 }) {
 	const [config, setConfig] = createSignal<{
 		apiKey: string;
@@ -19,15 +21,22 @@ function Rebrander({
 	return (
 		<Show when={config()} fallback={<RebranderConfig submit={setConfig} />}>
 			{(config) => (
-				<Rebranding
-					rebrander={createRebrander({
-						...config(),
-						url,
-						concurrentUpdates,
-						host: "http://localhost:8000",
-					})}
-					url={url}
-				/>
+				<>
+					<p>
+						Replacing "{config().targetString}" with "
+						{config().replacementString}" in contents of all posts.
+					</p>
+					<Rebranding
+						rebrander={createRebrander({
+							...config(),
+							url,
+							concurrentUpdates,
+							host: "http://localhost:8000",
+							flakePercentage,
+						})}
+						url={url}
+					/>
+				</>
 			)}
 		</Show>
 	);

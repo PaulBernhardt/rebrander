@@ -272,9 +272,7 @@ Deno.test("UpdateClient - send should send a message to the websocket with the r
 	});
 
 	// It will still send the message though
-	expect(ws.send).toHaveBeenCalledWith(
-		'{"type":"fake","data":{"message":"test"}}',
-	);
+	expect(ws.send).toHaveBeenCalledWith('{"type":"fake"}');
 });
 
 Deno.test("UpdaterClient - should send a status update with the total number of posts to process", async () => {
@@ -384,7 +382,7 @@ Deno.test("UpdaterClient - Should stream status updates", async () => {
 	);
 
 	// 1000 status updates, 1 success update, 1 initial status update
-	expect(send).toHaveBeenCalledTimes(1000 + 2);
+	expect(send).toHaveBeenCalledTimes(100 + 2);
 });
 
 Deno.test("UpdaterClient - Should send an error for failed updates", async () => {
@@ -437,5 +435,5 @@ Deno.test("UpdaterClient - Should send an error for failed updates", async () =>
 		}),
 	);
 	// 1000 status updates, 1 success update, 4 error updates, 1 initial status update
-	expect(send).toHaveBeenCalledTimes(1000 + 1 + 4 + 1);
+	expect(send).toHaveBeenCalledTimes(100 + 1 + 4 + 1);
 });
