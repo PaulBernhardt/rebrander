@@ -61,20 +61,6 @@ const mockClient = (
 describe("rebrander", () => {
 	const SERVER_URL = "https://updater.example.com";
 
-	// it("should rebrand a Ghost site", async () => {
-	// 	const rebrander = createRebrander({
-	// 		url: "https://ghost.org",
-	// 		token: "1234567890:12as",
-	// 		targetString: "The Sunday Star",
-	// 		replacementString: "Johnson's News & Co",
-	// 		host: SERVER_URL,
-	// 	});
-	// 	// const result = rebrand("The Sunday Star", "Johnson's News & Co");
-	// 	// expect(result).toBe(
-	// 	// 	"Welcome to the Johnson's News & Co! We hope you enjoy your stay.",
-	// 	// );
-	// });
-
 	it("Should go to an error state if the server returns an error", async () => {
 		const socket = mockWebSocket();
 		const { client, updater } = mockClient(socket);
@@ -84,7 +70,7 @@ describe("rebrander", () => {
 		};
 		const rebrander = createRebrander({
 			url: "https://ghost.org",
-			token: "1234567890:12as",
+			apiKey: "1234567890:12as",
 			targetString: "The Sunday Star",
 			replacementString: "Johnson's News & Co",
 			host: SERVER_URL,
@@ -109,7 +95,7 @@ describe("rebrander", () => {
 
 		const rebrander = createRebrander({
 			url: "https://not-ghost.org",
-			token: "1234567890:12as",
+			apiKey: "1234567890:12as",
 			targetString: "The Sunday Star",
 			replacementString: "Johnson's News & Co",
 			host: SERVER_URL,
@@ -132,7 +118,7 @@ describe("rebrander", () => {
 		};
 		const rebrander = createRebrander({
 			url: "https://ghost.org",
-			token: "1234567890:12as",
+			apiKey: "1234567890:12as",
 			targetString: "The Sunday Star",
 			replacementString: "Johnson's News & Co",
 			host: SERVER_URL,
@@ -160,7 +146,7 @@ describe("rebrander", () => {
 
 		const rebrander = createRebrander({
 			url: "https://ghost.org",
-			token: "1234567890:12as",
+			apiKey: "1234567890:12as",
 			targetString: "The Sunday Star",
 			replacementString: "Johnson's News & Co",
 			host: SERVER_URL,

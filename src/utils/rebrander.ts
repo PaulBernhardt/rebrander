@@ -19,13 +19,14 @@ export type RebranderStatus =
 
 export function createRebrander(options: {
 	url: string;
-	token: string;
+	apiKey: string;
 	targetString: string;
 	replacementString: string;
 	host: string;
 	client?: ReturnType<typeof hc<ServerApi>>;
 	concurrentUpdates?: number;
 }) {
+	console.log("Creating rebrander", options);
 	const client = options.client ?? hc<ServerApi>(options.host);
 	const [status, setStatus] = createSignal<RebranderStatus>(
 		REBRANDER_STATUS.LOADING,
@@ -43,13 +44,14 @@ export function createRebrander(options: {
 				setStatus(REBRANDER_STATUS.ERROR);
 				setError("Websocket error");
 				socket.close();
+				reject(event);
 			};
 			socket.onopen = (event) => {
 				setStatus(REBRANDER_STATUS.RUNNING);
 				socket.send(
 					JSON.stringify({
 						url: options.url,
-						token: options.token,
+						token: options.apiKey,
 						targetString: options.targetString,
 						replacementString: options.replacementString,
 						concurrentUpdates: options.concurrentUpdates,
@@ -62,6 +64,7 @@ export function createRebrander(options: {
 				} else {
 					setStatus(REBRANDER_STATUS.ERROR);
 					setError(reason);
+					reject(reason);
 				}
 			};
 			socket.onmessage = (event) => {

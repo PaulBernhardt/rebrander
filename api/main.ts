@@ -6,7 +6,6 @@ import update from "./routes/update.ts";
 
 const app = new Hono()
 	.use(logger())
-	.use()
 	.get("/health", (c) => c.text("OK"))
 	.route("/details", details)
 	.route("/update", update)

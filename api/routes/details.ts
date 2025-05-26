@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import { cors } from "hono/cors";
 import { z } from "zod/v4";
 import { Ghost } from "../utils/ghost.ts";
 
@@ -6,7 +7,7 @@ const DetailsSchema = z.object({
 	url: z.string(),
 });
 
-const app = new Hono().post("/", async (c) => {
+const app = new Hono().use(cors()).post("/", async (c) => {
 	try {
 		const body = await c.req.json();
 		const details = DetailsSchema.safeParse(body);

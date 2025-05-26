@@ -34,17 +34,22 @@ export class UpdaterClient {
 	static send(ws: WS, event: ClientMessage) {
 		ws.send(JSON.stringify(event));
 	}
-	abort: () => void = () => {};
+	abort: () => void = () => {
+		console.log("Aborting update");
+	};
 
 	onMessage: WebSocketEventHandler<OnMessageEvent> = async (event, ws) => {
+		console.log("WebSocket message", event);
 		try {
 			const payload = safeParse(event.data.toString());
 			if (payload.isErr()) {
+				console.error("Invalid request, expected valid JSON", event);
 				ws.close(4400, "Invalid request, expected valid JSON");
 				return;
 			}
 			const parsed = ClientRequestSchema.safeParse(payload.value);
 			if (!parsed.success) {
+				console.error("Invalid request", parsed.error);
 				ws.close(4400, `Invalid request: ${parsed.error.message}`);
 				return;
 			}
@@ -53,6 +58,7 @@ export class UpdaterClient {
 			const ghostClient = this.createGhostClient(url, token);
 			const info = await ghostClient.getSiteInfo();
 			if (info.isErr()) {
+				console.error("Unable to get site info", info.error);
 				ws.close(4400, `Unable to get site info: ${info.error.message}`);
 				return;
 			}
@@ -70,6 +76,7 @@ export class UpdaterClient {
 				ghostClient,
 				(postId, status) => {
 					if (status === "error") {
+						console.log("Error updating post", postId);
 						errorCount++;
 						UpdaterClient.send(ws, {
 							type: UpdateEventType.ERROR,
@@ -78,12 +85,14 @@ export class UpdaterClient {
 					}
 					processed++;
 					if (processed % notificationInterval === 0) {
+						console.log("Sending status update", processed, total);
 						UpdaterClient.send(ws, {
 							type: UpdateEventType.STATUS,
 							data: { total, processed },
 						});
 					}
 					if (processed === total) {
+						console.log("Sending success event", total, errorCount);
 						UpdaterClient.send(ws, {
 							type: UpdateEventType.SUCCESS,
 							data: { total, success: total - errorCount, error: errorCount },
@@ -93,6 +102,7 @@ export class UpdaterClient {
 				concurrentUpdates,
 			);
 			if (abort.isErr()) {
+				console.error("Unable to update posts", abort.error);
 				ws.close(4400, `Unable to update posts: ${abort.error.message}`);
 				return;
 			}
@@ -106,13 +116,18 @@ export class UpdaterClient {
 				},
 			});
 		} catch (error) {
+			console.error("Server error", error);
 			ws.close(1011, "Server error");
 		}
 	};
 	onClose: WebSocketEventHandler<OnCloseEvent> = async (event, ws) => {
+		console.log("WebSocket closed", event);
 		this.abort();
 	};
-	onError: WebSocketEventHandler<BasicEvent> = async () => {};
+	onError: WebSocketEventHandler<BasicEvent> = async (event, ws) => {
+		console.error("WebSocket error", event);
+		ws.close(1011, "Server error");
+	};
 
 	createGhostClient(url: string, token: string): Ghost {
 		const [id, secret] = token.split(":");

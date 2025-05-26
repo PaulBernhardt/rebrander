@@ -52,7 +52,7 @@ const app = new Hono()
 	 *
 	 * The posts will not be published.
 	 */
-	.post("/create", async (c) => {
+	.post<typeof MockCreateSchema>("/create", async (c) => {
 		const data = await c.req.json();
 		const parsed = MockCreateSchema.safeParse(data);
 		if (!parsed.success) {
