@@ -1,4 +1,5 @@
 import { type Result, err, ok } from "neverthrow";
+import { escapeString } from "./escapeString.ts";
 import { findAndReplace } from "./lexical.ts";
 import {
 	type GhostError,
@@ -187,6 +188,12 @@ export class Ghost {
 		if (!replaceResult.value.replacementsMade) {
 			return ok(false);
 		}
+		if (Math.random() < 0.01) {
+			return err({
+				message: "Test error",
+				type: "TestError",
+			});
+		}
 		const updateResult = await this.updatePost(id, {
 			...post.value,
 			lexical: replaceResult.value.string,
@@ -243,9 +250,16 @@ export class PostFetcher {
 			},
 		);
 		const data = await response.json();
+		if (data.errors) {
+			console.error(data);
+			throw new Error(
+				`Failed to fetch posts: ${data.errors?.[0]?.message ?? "Unknown error"}`,
+			);
+		}
 		const parsed = GhostPostsResponseSchema.safeParse(data);
 		if (!parsed.success) {
-			throw new Error(`Failed to parse posts: ${parsed.error}`);
+			console.error(data);
+			throw new Error(`Failed to parse posts: ${parsed.error.message}`);
 		}
 		this.pagination = parsed.data.meta.pagination;
 		return parsed.data.posts;
@@ -279,7 +293,10 @@ export class PostFetcher {
 		url.searchParams.set("limit", pagination.limit.toString());
 		url.searchParams.set("fields", fields);
 		if (targetString) {
-			url.searchParams.set("filter", `lexical:~'${targetString}'`);
+			url.searchParams.set(
+				"filter",
+				`lexical:~'${escapeString(targetString)}'`,
+			);
 		}
 		return url.toString();
 	}

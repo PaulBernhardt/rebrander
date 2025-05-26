@@ -117,6 +117,47 @@ Deno.test("Posts - should get posts with target string", async () => {
 	expect(found).toBeGreaterThanOrEqual(10);
 });
 
+Deno.test("Posts - should get posts with weird characters", async () => {
+	const ghost = new Ghost({
+		url: "https://ghost.glitteringvoid.ca",
+		tokenGenerator,
+	});
+
+	for (let i = 0; i < 10; i++) {
+		await ghost.createMockPost({
+			title: `FILTER TEST WEIRD ${i}`,
+			text: `FILTER TEST SECRET TEST Johnson's News & Co ${i}`,
+		});
+	}
+
+	const postFetcher = new PostFetcher(
+		"https://ghost.glitteringvoid.ca",
+		tokenGenerator,
+		{
+			next: 0,
+			limit: 25,
+		},
+		"SECRET TEST Johnson's News & Co",
+	);
+	let found = 0;
+	while (postFetcher.hasNext) {
+		const posts = await postFetcher.next();
+		expect(posts).toBeInstanceOf(Array);
+		for (const { id } of posts) {
+			found++;
+			const post = await ghost.getPost(id);
+			if (post.isErr()) {
+				throw new Error("post is null");
+			}
+			// Ghost's filter is not case sensitive, so we will get false positives
+			expect(post.value.lexical).toContain("SECRET TEST Johnson's News & Co");
+			await ghost.deletePost(id);
+		}
+	}
+	// It will be greater than 10 if it had to clean up from prior failed test runs
+	expect(found).toBeGreaterThanOrEqual(10);
+});
+
 Deno.test("ConstructUrl - should construct a url with starting pagination", () => {
 	const url = PostFetcher.constructUrl({
 		baseUrl: "https://ghost.glitteringvoid.ca",

@@ -17,6 +17,12 @@ export const REBRANDER_STATUS = {
 export type RebranderStatus =
 	(typeof REBRANDER_STATUS)[keyof typeof REBRANDER_STATUS];
 
+export type RebranderResult = {
+	total: number;
+	success: number;
+	error: number;
+};
+
 export function createRebrander(options: {
 	url: string;
 	apiKey: string;
@@ -36,7 +42,7 @@ export function createRebrander(options: {
 	const [processed, setProcessed] = createSignal<number>(0);
 	const [postErrors, setPostErrors] = createSignal<string[]>([]);
 	const [error, setError] = createSignal<string | null>(null);
-	const [updater] = createResource(async () => {
+	const [updater] = createResource<RebranderResult | null>(async () => {
 		return new Promise((resolve, reject) => {
 			const socket = client.update.ws.$ws();
 

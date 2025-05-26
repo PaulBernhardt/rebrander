@@ -39,17 +39,17 @@ export class UpdaterClient {
 	};
 
 	onMessage: WebSocketEventHandler<OnMessageEvent> = async (event, ws) => {
-		console.log("WebSocket message", event);
+		console.log("Recieved WebSocket message");
 		try {
 			const payload = safeParse(event.data.toString());
 			if (payload.isErr()) {
-				console.error("Invalid request, expected valid JSON", event);
+				console.error("Invalid request, expected valid JSON");
 				ws.close(4400, "Invalid request, expected valid JSON");
 				return;
 			}
 			const parsed = ClientRequestSchema.safeParse(payload.value);
 			if (!parsed.success) {
-				console.error("Invalid request", parsed.error);
+				console.error("Invalid request", parsed.error.message);
 				ws.close(4400, `Invalid request: ${parsed.error.message}`);
 				return;
 			}
@@ -67,7 +67,10 @@ export class UpdaterClient {
 			let errorCount = 0;
 			const notificationInterval = Math.max(
 				1,
-				Math.round(concurrentUpdates / 100),
+				Math.round(concurrentUpdates / 10),
+			);
+			console.log(
+				`Updating posts at ${url} with target string ${targetString} and replacement string ${replacementString}, with concurrent updates ${concurrentUpdates}`,
 			);
 
 			const abort = await updatePosts(
@@ -85,7 +88,6 @@ export class UpdaterClient {
 					}
 					processed++;
 					if (processed % notificationInterval === 0) {
-						console.log("Sending status update", processed, total);
 						UpdaterClient.send(ws, {
 							type: UpdateEventType.STATUS,
 							data: { total, processed },
@@ -97,6 +99,7 @@ export class UpdaterClient {
 							type: UpdateEventType.SUCCESS,
 							data: { total, success: total - errorCount, error: errorCount },
 						});
+						ws.close(1000, "Update complete");
 					}
 				},
 				concurrentUpdates,
@@ -121,11 +124,11 @@ export class UpdaterClient {
 		}
 	};
 	onClose: WebSocketEventHandler<OnCloseEvent> = async (event, ws) => {
-		console.log("WebSocket closed", event);
+		console.log("WebSocket closed", event.code, event.reason);
 		this.abort();
 	};
 	onError: WebSocketEventHandler<BasicEvent> = async (event, ws) => {
-		console.error("WebSocket error", event);
+		console.error("WebSocket error", event.type);
 		ws.close(1011, "Server error");
 	};
 

@@ -3,11 +3,11 @@ import { createSignal } from "solid-js";
 function Rebrander({
 	submit,
 }: {
-	submit: (
-		apiKey: string,
-		targetString: string,
-		replacementString: string,
-	) => void;
+	submit: (config: {
+		apiKey: string;
+		targetString: string;
+		replacementString: string;
+	}) => void;
 }) {
 	const [apiKey, setApiKey] = createSignal("");
 	const [targetString, setTargetString] = createSignal("The Sunday Star");
@@ -16,7 +16,11 @@ function Rebrander({
 	);
 
 	const handleGo = () => {
-		submit(apiKey(), targetString(), replacementString());
+		submit({
+			apiKey: apiKey(),
+			targetString: targetString(),
+			replacementString: replacementString(),
+		});
 	};
 
 	return (

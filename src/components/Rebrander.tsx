@@ -1,8 +1,8 @@
 // @ts-types="solid-js"
 import { Show, createSignal } from "solid-js";
 import { createRebrander } from "../utils/rebrander.ts";
-import { RebrandStatus } from "./RebrandStatus.tsx";
 import RebranderConfig from "./RebranderConfig.tsx";
+import { Rebranding } from "./Rebranding.tsx";
 
 function Rebrander({
 	url,
@@ -19,13 +19,14 @@ function Rebrander({
 	return (
 		<Show when={config()} fallback={<RebranderConfig submit={setConfig} />}>
 			{(config) => (
-				<RebrandStatus
+				<Rebranding
 					rebrander={createRebrander({
 						...config(),
 						url,
 						concurrentUpdates,
 						host: "http://localhost:8000",
 					})}
+					url={url}
 				/>
 			)}
 		</Show>
