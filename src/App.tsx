@@ -12,7 +12,8 @@ function App({
 	concurrentUpdates?: number;
 	flakePercentage?: number;
 } = {}) {
-	const siteInfo = createSiteInfo("http://localhost:8000");
+	const rebranderHost = __REBRANDER_HOST__;
+	const siteInfo = createSiteInfo(rebranderHost);
 
 	if (flakePercentage) {
 		console.log("flakePercentage", flakePercentage);
@@ -33,6 +34,7 @@ function App({
 							url={siteInfo.url() ?? ""}
 							concurrentUpdates={concurrentUpdates}
 							flakePercentage={flakePercentage}
+							rebranderHost={rebranderHost}
 						/>
 					</>
 				)}

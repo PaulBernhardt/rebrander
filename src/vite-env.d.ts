@@ -1,1 +1,1 @@
-/// <reference types="vite/client" />
+declare const __REBRANDER_HOST__: string;

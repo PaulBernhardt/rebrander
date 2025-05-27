@@ -8,10 +8,12 @@ function Rebrander({
 	url,
 	concurrentUpdates,
 	flakePercentage,
+	rebranderHost,
 }: {
 	url: string;
 	concurrentUpdates?: number;
 	flakePercentage?: number;
+	rebranderHost: string;
 }) {
 	const [config, setConfig] = createSignal<{
 		apiKey: string;
@@ -31,7 +33,7 @@ function Rebrander({
 							...config(),
 							url,
 							concurrentUpdates,
-							host: "http://localhost:8000",
+							host: rebranderHost,
 							flakePercentage,
 						})}
 						url={url}

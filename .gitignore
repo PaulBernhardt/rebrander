@@ -13,7 +13,6 @@ dist-ssr
 *.local
 
 # Environment variables
-*.env
 test.config.json
 
 # Editor directories and files
@@ -26,3 +25,4 @@ test.config.json
 *.njsproj
 *.sln
 *.sw?
+rebrander
