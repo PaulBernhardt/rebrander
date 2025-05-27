@@ -16,6 +16,7 @@ const NoUrl = () => <div>Please enter a valid URL</div>;
 const NotGhost = () => (
 	<div>This does not appear to be a Ghost site, please check the URL</div>
 );
+const Loading = () => <div>Loading...</div>;
 
 const UrlStatus: Record<InfoStateType, Component> = {
 	[INFO_STATE.INVALID_URL]: NoUrl,
@@ -23,6 +24,7 @@ const UrlStatus: Record<InfoStateType, Component> = {
 	[INFO_STATE.UNKNOWN]: NotGhost,
 	[INFO_STATE.NONE]: Nothing,
 	[INFO_STATE.VALID]: Nothing,
+	[INFO_STATE.LOADING]: Loading,
 };
 
 function SelectSite({ siteInfo }: { siteInfo: SiteInfo }) {

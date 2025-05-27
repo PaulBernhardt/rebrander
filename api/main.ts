@@ -5,18 +5,16 @@ import details from "./routes/details.ts";
 import mock from "./routes/mock.ts";
 import update from "./routes/update.ts";
 
+// API routes
 const app = new Hono()
 	.use(logger())
 	.get("/health", (c) => c.text("OK"))
 	.route("/details", details)
 	.route("/update", update)
-	.route("/mock", mock)
-	.use(
-		"/assets/*",
-		serveStatic({
-			root: "./dist",
-		}),
-	)
+	.route("/mock", mock);
+
+// Add client app to the server
+const server = app
 	.use(
 		"/*",
 		serveStatic({
@@ -28,10 +26,16 @@ const app = new Hono()
 				return path;
 			},
 		}),
+	)
+	.use(
+		"/assets/*",
+		serveStatic({
+			root: "./dist",
+		}),
 	);
-
 console.log("Server started");
 
-export default app;
+export default server;
 
+// API type for use with typed hono client
 export type ServerApi = typeof app;

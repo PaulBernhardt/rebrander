@@ -17,6 +17,7 @@ export const INFO_STATE = {
 	UNKNOWN: "Unknown error",
 	NONE: "None",
 	VALID: "Valid",
+	LOADING: "Loading",
 } as const;
 
 export type InfoStateType = (typeof INFO_STATE)[keyof typeof INFO_STATE];
@@ -36,6 +37,7 @@ export function createSiteInfo(host: string) {
 					setInfoState(INFO_STATE.INVALID_URL);
 					return null;
 				}
+				setInfoState(INFO_STATE.LOADING);
 
 				console.log("Fetching info for", url);
 				const response = await client.details.$post({
