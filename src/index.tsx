@@ -4,6 +4,15 @@ import { render } from "solid-js/web";
 import App from "./App.tsx";
 import "./index.css";
 
+/**
+ * This is the entry point for the client code.
+ * The expected path is '/', but there are routes
+ * set up to allow controlling both the number of concurrent
+ * updates, and the percentage of update that will artificially
+ * fail.
+ *
+ * */
+
 const root = document.getElementById("root");
 
 if (root) {

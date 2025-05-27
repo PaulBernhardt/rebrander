@@ -1,6 +1,21 @@
 import { createSignal } from "solid-js";
 
-function Rebrander({
+/**
+ * This component allows the user to enter rebrander configuration. In particular, it
+ * needs an API key (either from a custom integration, or a Staff Access Token with
+ * sufficient permissions). This is expected to be in the <id>:<secret> format displayed
+ * in Ghost.
+ *
+ * It also collects a (case sensitive) string to find in the contents of all ghost posts,
+ * and another string to replace it with.
+ *
+ * It has a small preview on the bottom that shows the before and after of a sample
+ * post.
+ *
+ * @param submit - A function to call when the user clicks the "Go" button.
+ * @returns The RebranderConfig component.
+ */
+function RebranderConfig({
 	submit,
 }: {
 	submit: (config: {
@@ -47,7 +62,7 @@ function Rebrander({
 				/>
 			</div>
 			<div class="input-group">
-				<label for="target-string">Target String:</label>
+				<label for="target-string">Replace this:</label>
 				<input
 					id="target-string"
 					type="text"
@@ -57,7 +72,7 @@ function Rebrander({
 				/>
 			</div>
 			<div class="input-group">
-				<label for="replacement-string">Replacement String:</label>
+				<label for="replacement-string">With this:</label>
 				<input
 					id="replacement-string"
 					type="text"
@@ -88,4 +103,4 @@ function Rebrander({
 	);
 }
 
-export default Rebrander;
+export default RebranderConfig;

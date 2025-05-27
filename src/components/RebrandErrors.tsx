@@ -1,9 +1,13 @@
-// @ts-types="solid-js"
-import {
-	Index, // @ts-types="solid-js"
-	Show,
-} from "solid-js";
+import { Index, Show } from "solid-js";
 
+/**
+ * This component displays a list of posts that failed to update,
+ * with links to the Ghost editor for each post.
+ *
+ * @param errors - The list of post IDs that failed to update.
+ * @param url - The URL of the Ghost instance.
+ * @returns The RebrandErrors component.
+ */
 function RebrandErrors({ errors, url }: { errors: string[]; url: string }) {
 	return (
 		<Show when={errors.length > 0}>

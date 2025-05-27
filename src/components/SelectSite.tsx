@@ -18,6 +18,10 @@ const NotGhost = () => (
 );
 const Loading = () => <div>Loading...</div>;
 
+/**
+ * UrlStatus maps the possible states of a site info object to a component
+ * to display.
+ */
 const UrlStatus: Record<InfoStateType, Component> = {
 	[INFO_STATE.INVALID_URL]: NoUrl,
 	[INFO_STATE.INVALID_RESPONSE]: NotGhost,
@@ -26,7 +30,17 @@ const UrlStatus: Record<InfoStateType, Component> = {
 	[INFO_STATE.VALID]: Nothing,
 	[INFO_STATE.LOADING]: Loading,
 };
-
+/**
+ * This component allows a user to enter a URL and check if it is a valid Ghost site.
+ * It will fire the setUrl signal when a "url" is submitted, and will display
+ * a message based on whether the site is valid or not.
+ *
+ * It will NOT display the site info. This component should likely be removed once a valid
+ * site info is fetched from the URL.
+ *
+ * @param siteInfo - The site info object to set the URL on.
+ * @returns The SelectSite component.
+ */
 function SelectSite({ siteInfo }: { siteInfo: SiteInfo }) {
 	const [inputUrl, setInputUrl] = createSignal("");
 

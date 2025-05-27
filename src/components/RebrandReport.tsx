@@ -1,5 +1,11 @@
 import type { RebranderResult } from "../utils/rebrander.ts";
 
+/**
+ * This component displays the final report of the rebranding.
+ *
+ * @param result - The rebrander result object.
+ * @returns The RebrandReport component.
+ */
 export function RebrandReport({ result }: { result: RebranderResult }) {
 	return (
 		<>
