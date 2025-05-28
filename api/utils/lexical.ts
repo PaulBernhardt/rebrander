@@ -6,6 +6,10 @@ type ParseError = {
 	type: "ParseError";
 };
 
+/**
+ * Our minimal LexicalTextObject schema. There are many other properties actually in the lexical format,
+ * but we only need to care about text and children, I think.
+ */
 export const LexicalTextObjectSchema = z.looseObject({
 	text: z.string().optional(),
 	get children() {
@@ -14,6 +18,9 @@ export const LexicalTextObjectSchema = z.looseObject({
 });
 export type LexicalTextObject = z.infer<typeof LexicalTextObjectSchema>;
 
+/**
+ * The root lexcical object, which, for our purposes, just has a root object pointing to a LexicalTextObject.
+ */
 export const LexicalObjectSchema = z.object({
 	root: LexicalTextObjectSchema,
 });
@@ -22,7 +29,7 @@ export type LexicalObject = z.infer<typeof LexicalObjectSchema>;
 
 /**
  * Deserializes a lexical string into a LexicalObject. Ensures the string is valid JSON and matches the LexicalObjectSchema,
- * which is a very loose schema containing a root object with optional text and children (which are also objets with optional text and children).
+ * which seems to be a very loose schema containing a root object with optional text and children (which are also objets with optional text and children).
  *
  * @param lexical - The lexical string to deserialize
  * @returns A Result containing the deserialized LexicalObject or a ParseError

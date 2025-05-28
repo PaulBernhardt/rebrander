@@ -2,7 +2,7 @@ import { expect, fn } from "jsr:@std/expect";
 import { err, ok } from "neverthrow";
 import { MockGhost } from "./mockGhost.ts";
 import { TokenGenerator } from "./tokenGenerator.ts";
-import { UpdaterClient } from "./updaterClient.ts";
+import { UpdaterServer } from "./updaterServer.ts";
 
 const targetString = "super secret";
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -37,8 +37,8 @@ const standardMessageOneConcurrentUpdate = {
 			}),
 	},
 };
-Deno.test("UpdaterClient - should return an error and close the connection if the first message does not contain the url and token", async (t) => {
-	const client = new UpdaterClient();
+Deno.test("UpdaterServer - should return an error and close the connection if the first message does not contain the url and token", async (t) => {
+	const client = new UpdaterServer();
 	const close = fn();
 	const send = fn();
 	await client.onMessage(
@@ -60,8 +60,8 @@ Deno.test("UpdaterClient - should return an error and close the connection if th
 	expect(send).not.toHaveBeenCalled();
 });
 
-Deno.test("UpdaterClient - should return an error and close the connection if the first message does not match the schema", async (t) => {
-	const client = new UpdaterClient();
+Deno.test("UpdaterServer - should return an error and close the connection if the first message does not match the schema", async (t) => {
+	const client = new UpdaterServer();
 	const close = fn();
 	const send = fn();
 	await client.onMessage(
@@ -89,8 +89,8 @@ Deno.test("UpdaterClient - should return an error and close the connection if th
 	expect(send).not.toHaveBeenCalled();
 });
 
-Deno.test("UpdaterClient - should return an error and close the connection if targetString is too short", async () => {
-	const client = new UpdaterClient();
+Deno.test("UpdaterServer - should return an error and close the connection if targetString is too short", async () => {
+	const client = new UpdaterServer();
 	const close = fn();
 	const send = fn();
 	await client.onMessage(
@@ -118,8 +118,8 @@ Deno.test("UpdaterClient - should return an error and close the connection if ta
 	expect(send).not.toHaveBeenCalled();
 });
 
-Deno.test("UpdaterClient - should return an error and close the connection if replacementString is too short", async () => {
-	const client = new UpdaterClient();
+Deno.test("UpdaterServer - should return an error and close the connection if replacementString is too short", async () => {
+	const client = new UpdaterServer();
 	const close = fn();
 	const send = fn();
 	await client.onMessage(
@@ -147,8 +147,8 @@ Deno.test("UpdaterClient - should return an error and close the connection if re
 	expect(send).not.toHaveBeenCalled();
 });
 
-Deno.test("UpdaterClient - should return an error and close the connection if concurrentUpdates is too low", async () => {
-	const client = new UpdaterClient();
+Deno.test("UpdaterServer - should return an error and close the connection if concurrentUpdates is too low", async () => {
+	const client = new UpdaterServer();
 	const close = fn();
 	const send = fn();
 	await client.onMessage(
@@ -177,8 +177,8 @@ Deno.test("UpdaterClient - should return an error and close the connection if co
 	expect(send).not.toHaveBeenCalled();
 });
 
-Deno.test("UpdaterClient - should return an error and close the connection if concurrentUpdates is too high", async () => {
-	const client = new UpdaterClient();
+Deno.test("UpdaterServer - should return an error and close the connection if concurrentUpdates is too high", async () => {
+	const client = new UpdaterServer();
 	const close = fn();
 	const send = fn();
 	await client.onMessage(
@@ -206,8 +206,8 @@ Deno.test("UpdaterClient - should return an error and close the connection if co
 	);
 	expect(send).not.toHaveBeenCalled();
 });
-Deno.test("UpdaterClient - should return an error and close the connection if the url is not a valid ghost url", async () => {
-	const client = new UpdaterClient();
+Deno.test("UpdaterServer - should return an error and close the connection if the url is not a valid ghost url", async () => {
+	const client = new UpdaterServer();
 	const close = fn();
 	const send = fn();
 
@@ -230,9 +230,9 @@ Deno.test("UpdaterClient - should return an error and close the connection if th
 	expect(send).not.toHaveBeenCalled();
 });
 
-Deno.test("UpdaterClient - should return an error and close the connection if a second message is sent", () => {});
-Deno.test("UpdaterClient - should return an error and close the connection if token does not have access to fetch posts for the url", async () => {
-	const client = new UpdaterClient();
+Deno.test("UpdaterServer - should return an error and close the connection if a second message is sent", () => {});
+Deno.test("UpdaterServer - should return an error and close the connection if token does not have access to fetch posts for the url", async () => {
+	const client = new UpdaterServer();
 	const close = fn();
 	const send = fn();
 
@@ -254,11 +254,11 @@ Deno.test("UpdaterClient - should return an error and close the connection if to
 });
 
 Deno.test("UpdateClient - send should send a message to the websocket with the right type and data", async () => {
-	const client = new UpdaterClient();
+	const client = new UpdaterServer();
 	const ws = {
 		send: fn(),
 	};
-	UpdaterClient.send(ws as any, {
+	UpdaterServer.send(ws as any, {
 		type: "status",
 		data: { total: 100, processed: 0 },
 	});
@@ -266,7 +266,7 @@ Deno.test("UpdateClient - send should send a message to the websocket with the r
 		'{"type":"status","data":{"total":100,"processed":0}}',
 	);
 
-	UpdaterClient.send(ws as any, {
+	UpdaterServer.send(ws as any, {
 		// @ts-expect-error - This function should complain if the type is not valid
 		type: "fake",
 	});
@@ -275,8 +275,8 @@ Deno.test("UpdateClient - send should send a message to the websocket with the r
 	expect(ws.send).toHaveBeenCalledWith('{"type":"fake"}');
 });
 
-Deno.test("UpdaterClient - should send a status update with the total number of posts to process", async () => {
-	const client = new UpdaterClient();
+Deno.test("UpdaterServer - should send a status update with the total number of posts to process", async () => {
+	const client = new UpdaterServer();
 	const close = fn();
 	const send = fn();
 
@@ -306,8 +306,8 @@ Deno.test("UpdaterClient - should send a status update with the total number of 
 	);
 });
 
-Deno.test("UpdaterClient - Should abort the update if the connection is closed", async () => {
-	const client = new UpdaterClient();
+Deno.test("UpdaterServer - Should abort the update if the connection is closed", async () => {
+	const client = new UpdaterServer();
 	const close = fn();
 	const send = fn();
 
@@ -348,8 +348,8 @@ Deno.test("UpdaterClient - Should abort the update if the connection is closed",
 	await sleep(10);
 });
 
-Deno.test("UpdaterClient - Should stream status updates", async () => {
-	const client = new UpdaterClient();
+Deno.test("UpdaterServer - Should stream status updates", async () => {
+	const client = new UpdaterServer();
 	const close = fn();
 	const send = fn();
 
@@ -385,8 +385,8 @@ Deno.test("UpdaterClient - Should stream status updates", async () => {
 	expect(send).toHaveBeenCalledTimes(100 + 2);
 });
 
-Deno.test("UpdaterClient - Should send an error for failed updates", async () => {
-	const client = new UpdaterClient();
+Deno.test("UpdaterServer - Should send an error for failed updates", async () => {
+	const client = new UpdaterServer();
 	const close = fn();
 	const send = fn();
 

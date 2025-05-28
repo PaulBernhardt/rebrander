@@ -3,9 +3,21 @@ import { Ghost, MOCK_POST_LEXICAL } from "./ghost.ts";
 import type { GhostError, GhostPost, GhostSiteInfo } from "./schemas.ts";
 import type { TokenGenerator } from "./tokenGenerator.ts";
 
+/**
+ * A mock implementation of the {@link Ghost} class. Keeps an internal store
+ * of mock posts created and deleted, so the other methods work as expected.
+ *
+ * You can create an instance of this and then replace specific functions to
+ * preform tests without relying on an actual Ghost instance.
+ */
 export class MockGhost extends Ghost {
 	private idCounter = 0;
 	private posts: Map<string, GhostPost> = new Map();
+	/**
+	 * Creates a mock Ghost instance. Note that the url and tokenGenerator are ignored.
+	 * @param url
+	 * @param tokenGenerator
+	 */
 	constructor(url: string, tokenGenerator: TokenGenerator) {
 		super({ url, tokenGenerator });
 	}
@@ -42,8 +54,11 @@ export class MockGhost extends Ghost {
 		return Promise.resolve(ok(post));
 	}
 
+	/**
+	 * Note that unlike the real ghost class, this will return ALL posts you have created, not just the ones that match the target string.
+	 */
 	override getAllPostIds(
-		targetString: string,
+		_targetString: string,
 	): Promise<Result<string[], GhostError>> {
 		const ids = Array.from(this.posts.keys());
 		return Promise.resolve(ok(ids));

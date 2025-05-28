@@ -1,5 +1,9 @@
 import { z } from "zod/v4";
 
+/**
+ * This file contains all the Zod schemas used in the project, as well as their inferred types.
+ */
+
 // Ghost Schemas
 
 export const GhostSiteInfoSchema = z.object({
@@ -116,3 +120,8 @@ export const ClientMessageSchema = z.discriminatedUnion("type", [
 	}),
 ]);
 export type ClientMessage = z.infer<typeof ClientMessageSchema>;
+
+// Details Route Schemas
+export const DetailsSchema = z.object({
+	url: z.string(),
+});

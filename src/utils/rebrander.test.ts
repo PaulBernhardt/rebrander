@@ -2,7 +2,7 @@ import { err, ok } from "neverthrow";
 import { describe, expect, it } from "vitest";
 import { MockGhost } from "../../api/utils/mockGhost.ts";
 import { TokenGenerator } from "../../api/utils/tokenGenerator.ts";
-import { UpdaterClient, type WS } from "../../api/utils/updaterClient.ts";
+import { UpdaterServer, type WS } from "../../api/utils/updaterServer.ts";
 import { createRebrander } from "./rebrander.ts";
 
 async function sleep(ms: number) {
@@ -39,13 +39,13 @@ const mockWebSocket = (): MockWebSocket => {
 
 const mockClient = (
 	payload: MockWebSocket,
-): { client: MockClient; updater: UpdaterClient } => {
-	const updaterClient = new UpdaterClient();
+): { client: MockClient; updater: UpdaterServer } => {
+	const updaterServer = new UpdaterServer();
 	const wsProxy: WS = {
 		close: (code, reason) => payload.onclose({ code, reason } as any),
 		send: (data) => payload.onmessage({ data } as any),
 	};
-	payload.send = (data) => updaterClient.onMessage({ data } as any, wsProxy);
+	payload.send = (data) => updaterServer.onMessage({ data } as any, wsProxy);
 	return {
 		client: {
 			update: {
@@ -54,7 +54,7 @@ const mockClient = (
 				},
 			},
 		},
-		updater: updaterClient,
+		updater: updaterServer,
 	};
 };
 

@@ -15,6 +15,10 @@ const tokenGenerator = new TokenGenerator(
 	config.GHOST_ADMIN_API_SECRET,
 );
 
+/**
+ * These tests are designed to make sure the Ghost class actually works against a real Ghost instance.
+ * They will only pass if you happen to have access to my personal Ghost instance.
+ */
 Deno.test("getSiteInfo - should get site info", async () => {
 	const site = await Ghost.getSiteInfo("https://ghost.glitteringvoid.ca");
 	if (site.isErr()) {

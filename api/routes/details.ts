@@ -1,12 +1,17 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
-import { z } from "zod/v4";
 import { Ghost } from "../utils/ghost.ts";
+import { DetailsSchema } from "../utils/schemas.ts";
 
-const DetailsSchema = z.object({
-	url: z.string(),
-});
-
+/**
+ * Details exposes a route that takes a JSON object containg a `url` property,
+ * and returns either the Ghost Site Info, if it's a valid Ghost site, or an error message.
+ *
+ * It takes no api keys, since the info route is not protected in Ghost.
+ *
+ * The actual work is done by the {@link Ghost} client, which has a static `siteInfo` method.
+ * This route just controls recieving the request, and responding with either the info or an error.
+ */
 const app = new Hono().use(cors()).post("/", async (c) => {
 	try {
 		const body = await c.req.json();

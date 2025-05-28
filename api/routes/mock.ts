@@ -1,13 +1,3 @@
-/**
- * Mock routes for creating and deleting posts.
- *
- * You can use these to create (and delete) test posts in
- * an actual Ghost instance that can then be used with the Updater
- * client.
- *
- * These are very simple posts, and will not be published.
- */
-
 import { Sema } from "async-sema";
 import { Hono } from "hono";
 import { z } from "zod/v4";
@@ -34,6 +24,10 @@ const MockCreateSchema = z.object({
  *
  * You can control the number of concurrent requests to the delete route
  * by setting the concurrentRequests parameter, which defaults to 100.
+ *
+ * Note that it does not take a target string. All posts created
+ * by the mock create route have a special string that will be used
+ * to identify and delete them.
  */
 const MockDeleteSchema = z.object({
 	url: z.url(),
@@ -41,14 +35,21 @@ const MockDeleteSchema = z.object({
 	concurrentRequests: z.number().min(1).max(1000).default(100),
 });
 
+/**
+ * Mock routes for creating and deleting posts.
+ *
+ * You can use these to create (and delete) test posts in
+ * an actual Ghost instance that can then be used with the Updater
+ * client.
+ *
+ * These are very simple posts, and will not be published.
+ */
 const app = new Hono()
 	/**
-	 * Create a number of mock posts in the Ghost instance.
-	 *
 	 * Create a number of test posts in the Ghost instance.
 	 *
 	 * The posts will be created with the targetString in the title and text,
-	 * plus the word "TEST_DATA" int he body that can be used to identify the posts for later cleanup.
+	 * plus the word "SUPER_SECRET_TEST_DATA_DELETE_ME" int he body that can be used to identify the posts for later cleanup.
 	 *
 	 * The posts will not be published.
 	 */
@@ -70,7 +71,7 @@ const app = new Hono()
 					try {
 						ghost.createMockPost({
 							title: `${targetString} ${i}`,
-							text: `TEST_DATA ${targetString} ${i}`,
+							text: `SUPER_SECRET_TEST_DATA_DELETE_ME ${targetString} ${i}`,
 						});
 					} catch (e) {
 						console.error(e);
@@ -85,12 +86,15 @@ const app = new Hono()
 	})
 	/**
 	 * Delete all posts in the Ghost instance that were created with the
-	 * /create route (as identified by the "TEST_DATA" string in the body).
+	 * /create route (as identified by the "SUPER_SECRET_TEST_DATA_DELETE_ME" string in the body).
 	 *
 	 * This is useful for cleaning up after testing.
 	 *
 	 * To limit load on the Ghost instance, you can set the concurrentRequests
 	 * parameter, which defaults to 100.
+	 *
+	 * Be careful if the ghost site has actual posts containing the "SUPER_SECRET_TEST_DATA_DELETE_ME" string,
+	 * as this will delete them.
 	 */
 	.post("/delete", async (c) => {
 		const data = await c.req.json();
@@ -102,7 +106,7 @@ const app = new Hono()
 		const [id, secret] = token.split(":");
 		const tokenGenerator = new TokenGenerator(id, secret);
 		const ghost = new Ghost({ url, tokenGenerator });
-		const posts = await ghost.getAllPostIds("TEST_DATA");
+		const posts = await ghost.getAllPostIds("SUPER_SECRET_TEST_DATA_DELETE_ME");
 		if (posts.isErr()) {
 			return c.json({ error: posts.error.message }, 400);
 		}
