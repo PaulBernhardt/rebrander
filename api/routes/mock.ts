@@ -67,9 +67,9 @@ const app = new Hono()
 		const sema = new Sema(concurrentRequests);
 		for (let i = 0; i < count; i++) {
 			promises.push(
-				sema.acquire().then(() => {
+				sema.acquire().then(async () => {
 					try {
-						ghost.createMockPost({
+						await ghost.createMockPost({
 							title: `${targetString} ${i}`,
 							text: `SUPER_SECRET_TEST_DATA_DELETE_ME ${targetString} ${i}`,
 						});
