@@ -73,6 +73,9 @@ export async function updatePosts(
 	if (postIds.isErr()) {
 		return err(postIds.error);
 	}
+	console.log(
+		`Updating ${postIds.value.length} posts with ${concurrentUpdateLimit} concurrent updates`,
+	);
 	const sema = new Sema(concurrentUpdateLimit);
 	postIds.value.map(async (postId) => {
 		await sema.acquire();

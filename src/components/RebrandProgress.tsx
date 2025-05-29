@@ -1,3 +1,4 @@
+import { Show } from "solid-js";
 import type { Rebrander } from "../utils/rebrander.ts";
 
 /**
@@ -11,15 +12,21 @@ import type { Rebrander } from "../utils/rebrander.ts";
 function RebrandProgress({ rebrander }: { rebrander: Rebrander }) {
 	return (
 		<>
-			<p>
-				Progress: {rebrander.processed()} of {rebrander.total() ?? "???"}
-			</p>
-			<p>
-				<progress
-					value={rebrander.processed()}
-					max={rebrander.total() ?? Number.POSITIVE_INFINITY}
-				/>
-			</p>
+			<Show
+				when={rebrander.total() !== 0 && rebrander.total()}
+				fallback={<p>Fetching posts...</p>}
+			>
+				{(total) => (
+					<>
+						<p>
+							Progress: {rebrander.processed()} of {total()}
+						</p>
+						<p>
+							<progress value={rebrander.processed()} max={total()} />
+						</p>
+					</>
+				)}
+			</Show>
 		</>
 	);
 }

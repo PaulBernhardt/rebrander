@@ -9,7 +9,6 @@ import jwt from "npm:jsonwebtoken";
  * it again will return the same token if it is still valid. After four minutes,
  * the token will be regenerated on the next call.
  */
-
 export class TokenGenerator {
 	private expiry = 0;
 	private token = "";

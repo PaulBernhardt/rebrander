@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { upgradeWebSocket } from "hono/deno";
-import { UpdaterServer } from "../utils/updaterClient.ts";
+import { UpdaterServer } from "../utils/updaterServer.ts";
 
 /**
  * Update exposes a websocket a /ws, handled by the a new instace of the {@link UpdaterServer} class.

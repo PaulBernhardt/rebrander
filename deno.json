@@ -5,7 +5,7 @@
 		"dev:vite": "deno run -A npm:vite",
 		"build": "deno run -A npm:vite build",
 		"test": "deno test --allow-env --allow-net --allow-read",
-		"docker:build": "docker build -t ghost-rebrander .",
+		"docker:build": "docker build -t rebrander .",
 		"docker:run": "docker run -p 8000:8000 rebrander",
 		"docker:build-dev": "docker build --build-arg BUILD_MODE=development -t rebrander .",
 		"docker": "deno task docker:build-dev && deno task docker:run",

@@ -1,5 +1,5 @@
 # Build stage
-FROM --platform=${BUILDPLATFORM} denoland/deno:latest as builder
+FROM --platform=${BUILDPLATFORM} denoland/deno:latest AS builder
 WORKDIR /app
 
 # Add build argument with a default value

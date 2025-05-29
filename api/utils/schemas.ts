@@ -78,7 +78,7 @@ export const ClientRequestSchema = z.object({
 	token: GhostTokenSchema,
 	targetString: z.string().min(1),
 	replacementString: z.string().min(1),
-	concurrentUpdates: z.number().min(1).max(100).optional().default(100),
+	concurrentUpdates: z.number().min(1).max(1000).optional().default(100),
 	flakePercentage: z.number().min(0).max(1).optional().default(0),
 });
 
